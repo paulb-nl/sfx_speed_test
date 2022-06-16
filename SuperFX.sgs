@@ -1,0 +1,814 @@
+.include "libSFX.i"
+
+.segment "GSUCODE"
+
+.export GSU_adc, GSU_adci, GSU_add, GSU_addi, GSU_and, GSU_alt1, GSU_alt2, GSU_alt3, GSU_andi, GSU_asr, \
+        GSU_bcc, GSU_bcs, GSU_beq, GSU_bge, GSU_bic, GSU_bici, GSU_blt,  \
+        GSU_bmi, GSU_bne, GSU_bpl, GSU_bra, GSU_bvc, GSU_bvs,  \
+        GSU_cache, GSU_cache1, GSU_cache2, GSU_cache3, GSU_cache4, GSU_cache_off, \
+        GSU_cmode, GSU_cmp, GSU_color, GSU_dec, GSU_div,  \
+        GSU_fmult, GSU_from, \
+        GSU_getb1, GSU_getb2, GSU_getbh, GSU_getbl, GSU_getbs, GSU_getc, \
+        GSU_hib, GSU_ibt, GSU_inc, GSU_iwt, GSU_jmp, GSU_ldb, GSU_ldw, GSU_link, GSU_ljmp, \
+        GSU_lm, GSU_lms, GSU_lmult, GSU_lob, GSU_lsr, GSU_merge, GSU_move, GSU_moves, \
+        GSU_mult, GSU_multi, GSU_nop, GSU_not, GSU_or, GSU_ori, \
+        GSU_plot1, GSU_plot2, GSU_plot3, GSU_plot4, GSU_plot4, GSU_plot5, GSU_plot6, GSU_plot7, GSU_plot8, \
+        GSU_plot9, GSU_plot10, GSU_plot11, GSU_plot12, GSU_plot13, GSU_plot14, GSU_plot15, GSU_plot16, GSU_plot17, \
+        GSU_ramb, GSU_rol, GSU_romb, GSU_ror, GSU_rpix1, GSU_rpix2, \
+        GSU_sbc, GSU_sbk, GSU_sex, GSU_sm, GSU_sms, GSU_stb, GSU_stw, GSU_sub, GSU_subi, GSU_swap, \
+        GSU_to, GSU_umult, GSU_umulti, GSU_with, GSU_xor, GSU_xori
+
+.res 512, $00 ;  512 byte offset to avoid code being cached when Cache Base Register is reset
+
+.macro gsu_loop_begin 
+    iwt R12,#$2000
+    move R13,R15
+.endmacro
+
+.macro gsu_loop_end 
+    loop
+    nop
+    
+	stop
+	nop
+.endmacro
+
+GSU_cache1:
+    cache
+    stop 
+    nop
+
+GSU_adc:
+    gsu_loop_begin
+    adc R12
+    gsu_loop_end
+    
+GSU_adci:
+    gsu_loop_begin
+    adc #$1
+    gsu_loop_end
+    
+GSU_add:
+    gsu_loop_begin
+    add R12
+    gsu_loop_end
+    
+GSU_addi:
+    gsu_loop_begin
+    add #$1
+    gsu_loop_end
+
+GSU_alt1:
+    gsu_loop_begin
+    alt1
+    nop
+    gsu_loop_end
+
+GSU_alt2:
+    gsu_loop_begin
+    alt2
+    nop
+    gsu_loop_end
+
+GSU_alt3:
+    gsu_loop_begin
+    alt3
+    nop
+    gsu_loop_end
+    
+GSU_and:
+    gsu_loop_begin
+    and R12
+    gsu_loop_end
+
+GSU_andi:
+    gsu_loop_begin
+    and #$A
+    gsu_loop_end
+
+GSU_asr:
+    gsu_loop_begin
+    asr
+    gsu_loop_end
+    
+GSU_bcc:
+    gsu_loop_begin
+    ibt R0, #$00
+    add #$1
+    bcc :+
+:   nop
+    gsu_loop_end
+    
+GSU_bcs:
+    gsu_loop_begin
+    ibt R0, #$FF
+    add #$1
+    bcs :+
+:   nop
+    gsu_loop_end
+    
+GSU_beq:
+    gsu_loop_begin
+    ibt R0, #$00
+    add #$0
+    beq :+
+:   nop
+    gsu_loop_end
+
+GSU_bge:
+    gsu_loop_begin
+    ibt R0, #$00
+    add #$F
+    bge :+
+:   nop
+    gsu_loop_end
+    
+GSU_bic:
+    gsu_loop_begin
+    bic R12
+    gsu_loop_end
+
+GSU_bici:
+    gsu_loop_begin
+    bic #$F
+    gsu_loop_end    
+
+GSU_blt:
+    ibt R0, #$00
+    gsu_loop_begin
+    ibt R3, #$0F
+    cmp R3
+    blt :+
+:   nop
+    gsu_loop_end
+
+GSU_bmi:
+    ibt R0, #$00
+    gsu_loop_begin
+    ibt R3, #$0F
+    cmp R3
+    bmi :+
+:   nop
+    gsu_loop_end
+
+GSU_bne:
+    ibt R0, #$00
+    gsu_loop_begin
+    ibt R3, #$AA
+    cmp R3
+    bne :+
+:   nop
+    gsu_loop_end
+    
+GSU_bpl:
+    gsu_loop_begin
+    ibt R0, #$00
+    add #$F
+    bpl :+
+:   nop
+    gsu_loop_end
+
+GSU_bra:
+    gsu_loop_begin
+    nop
+    nop
+    nop
+    nop
+    bra :+
+:   nop
+    gsu_loop_end
+    
+GSU_bvc:
+    gsu_loop_begin
+    ibt R0, #$00
+    add #$0
+    bvc :+
+:   nop
+    gsu_loop_end
+    
+GSU_bvs:
+    iwt R3, #$7FFF
+    gsu_loop_begin
+    move R0,R3
+    add #$F
+    bvs :+
+:   nop
+    gsu_loop_end
+
+GSU_cmode:
+    gsu_loop_begin
+    cmode
+    gsu_loop_end
+
+GSU_cmp:
+    gsu_loop_begin
+    cmp R3
+    gsu_loop_end
+    
+GSU_color:
+    gsu_loop_begin
+    color
+    gsu_loop_end
+
+GSU_dec:
+    gsu_loop_begin
+    dec R0
+    gsu_loop_end
+
+GSU_div:
+    gsu_loop_begin
+    div2
+    gsu_loop_end
+
+GSU_fmult:
+    iwt R5, #$3333
+    iwt R6, #$8888
+    gsu_loop_begin
+    from R5
+    fmult
+	gsu_loop_end
+
+GSU_from:
+    gsu_loop_begin
+    from R0
+    gsu_loop_end
+
+GSU_cache2:
+    cache
+    stop 
+    nop
+    
+GSU_getb1:
+    ibt R0, #00
+    romb
+    iwt R14, #$8000
+    gsu_loop_begin
+    inc R14
+    getb  ; getb & nop have to wait for fetching to complete after changing R14
+    nop
+	gsu_loop_end
+
+GSU_getb2:
+    ibt R0, #00
+    romb
+    iwt R14, #$8000
+    gsu_loop_begin
+    inc R14
+    nop   ; nop is executed before the getb wait so this should be faster
+    getb
+	gsu_loop_end
+    
+GSU_getbh:
+    ibt R0, #00
+    romb
+    iwt R14, #$8000
+    gsu_loop_begin
+    inc R14
+    getbh
+    nop
+	gsu_loop_end
+    
+GSU_getbl:
+    ibt R0, #00
+    romb
+    iwt R14, #$8000
+    gsu_loop_begin
+    inc R14
+    getbl
+    nop
+	gsu_loop_end
+
+GSU_getbs:
+    ibt R0, #00
+    romb
+    iwt R14, #$8000
+    gsu_loop_begin
+    inc R14
+    getbs
+    nop
+	gsu_loop_end
+
+GSU_getc:
+    ibt R0, #00
+    romb
+    iwt R14, #$8000
+    gsu_loop_begin
+    inc R14
+    getc
+    nop
+	gsu_loop_end
+
+GSU_hib:
+    gsu_loop_begin
+    hib
+    gsu_loop_end
+
+GSU_ibt:
+    gsu_loop_begin
+    ibt R0, #$AA
+    gsu_loop_end
+
+GSU_inc:
+    gsu_loop_begin
+    inc R0
+    gsu_loop_end
+    
+GSU_iwt:
+    gsu_loop_begin
+    iwt R0, #$ABCD
+    gsu_loop_end
+    
+GSU_jmp:
+    iwt R10, #.loword(_jmp)
+    gsu_loop_begin
+    jmp R10
+_jmp:
+    nop    
+    gsu_loop_end
+    
+GSU_ldb:
+    ibt R0, #$70
+    ramb
+    ibt R0, #$00
+    gsu_loop_begin
+    ldb (R0)
+    gsu_loop_end
+
+GSU_ldw:
+    ibt R0, #$70
+    ramb
+    ibt R0, #$00
+    gsu_loop_begin
+    ldw (R0)
+    gsu_loop_end
+
+GSU_link:
+    gsu_loop_begin
+    link #4
+    gsu_loop_end
+
+GSU_lm:
+    ibt R0, #$70
+    ramb
+    gsu_loop_begin
+    lm R0, ($0000)
+    gsu_loop_end
+
+GSU_lms:
+    ibt R0, #$70
+    ramb
+    gsu_loop_begin
+    lms R0, ($00)
+    gsu_loop_end
+    
+GSU_lmult:
+    iwt R5, #$3333
+    iwt R6, #$8888
+    gsu_loop_begin
+    from R5
+    lmult
+	gsu_loop_end
+
+GSU_lob:
+    gsu_loop_begin
+    lob
+    gsu_loop_end
+    
+GSU_lsr:
+    gsu_loop_begin
+    lsr
+    gsu_loop_end
+
+GSU_merge:
+    gsu_loop_begin
+    merge
+    gsu_loop_end
+
+GSU_move:
+    gsu_loop_begin
+    move R0, R1
+    gsu_loop_end
+    
+GSU_moves:
+    gsu_loop_begin
+    moves R0, R1
+    gsu_loop_end
+    
+GSU_mult:
+    ibt R0, #$AA
+    ibt R6, #$BB
+    gsu_loop_begin
+    mult R6
+    nop
+	gsu_loop_end
+   
+GSU_multi:
+    ibt R0, #$AA
+    gsu_loop_begin
+    mult #$B
+	gsu_loop_end
+
+GSU_nop:
+    gsu_loop_begin
+    nop
+    gsu_loop_end
+
+GSU_not:
+    gsu_loop_begin
+    not
+    gsu_loop_end
+
+GSU_cache3:
+    cache
+    stop 
+    nop
+    
+GSU_or:
+    gsu_loop_begin
+    or R3
+    gsu_loop_end
+    
+GSU_ori:
+    gsu_loop_begin
+    or #$2
+    gsu_loop_end
+
+GSU_plot1:
+    ibt R1, #$0
+    ibt R2, #$0
+    ibt R0, #$0
+    cmode
+    ibt R0, #$00 ; no-plot because color is transparent
+    color
+    gsu_loop_begin
+    plot
+    gsu_loop_end
+
+GSU_plot2:
+    ibt R1, #$0
+    ibt R2, #$0
+    ibt R0, #$0
+    cmode
+    ibt R0, #$A1 ; normal plot
+    color
+    gsu_loop_begin
+    plot
+    gsu_loop_end
+    
+GSU_plot3:
+    ibt R1, #$0
+    ibt R2, #$0
+    ibt R0, #$0
+    cmode
+    ibt R0, #$F0 ; no-plot for 4 & 16 color, plot for 256 color
+    color
+    gsu_loop_begin
+    plot
+    gsu_loop_end
+    
+GSU_plot4:
+    ibt R1, #$0
+    ibt R2, #$0
+    ibt R0, #$0
+    cmode
+    ibt R0, #$FC ; no-plot for 4 color, plot for 16 & 256 color
+    color
+    gsu_loop_begin
+    plot
+    gsu_loop_end
+    
+GSU_plot5:
+    ibt R1, #$0
+    ibt R2, #$0
+    ibt R0, #$8 ; Freeze High nibble
+    cmode
+    ibt R0, #$F0 ; no-plot, 256 color with Freeze high nibble only checks lower 4 bits for color 0
+    color
+    gsu_loop_begin
+    plot
+    gsu_loop_end
+
+GSU_plot6:
+    ibt R1, #$0
+    ibt R2, #$0
+    ibt R0, #$1 ; Transparant off: plot color 0
+    cmode
+    ibt R0, #$00
+    color
+    gsu_loop_begin
+    plot
+    gsu_loop_end
+    
+GSU_plot7:
+    ibt R1, #$0
+    ibt R2, #$0
+    ibt R0, #$1 ; Transparant off: plot color 0
+    cmode
+    ibt R0, #$A2
+    color
+    gsu_loop_begin
+    plot
+    gsu_loop_end
+
+GSU_plot8:
+    ibt R1, #$0
+    ibt R2, #$0
+    ibt R0, #$2 ; Dither on
+    cmode
+    ibt R0, #$A3
+    color
+    gsu_loop_begin
+    plot
+    gsu_loop_end
+    
+GSU_plot9:
+    ibt R1, #$0
+    ibt R2, #$0
+    ibt R0, #$10 ; OBJ mode on
+    cmode
+    ibt R0, #$A4
+    color
+    gsu_loop_begin
+    plot
+    gsu_loop_end    
+    
+GSU_plot10:
+    ibt R1, #$0
+    ibt R2, #$0
+    ibt R0, #$12 ; Dither & OBJ mode on
+    cmode
+    ibt R0, #$A5
+    color
+    gsu_loop_begin
+    plot
+    gsu_loop_end 
+
+GSU_plot11:
+    ibt R1, #$0 ; x
+    ibt R2, #$0 ; y
+    ibt R0, #$0
+    ibt R3, #$7
+    cmode
+    ibt R0, #$00 ; no-plot
+    color
+    gsu_loop_begin
+    plot
+    with R1
+    add R3      ; next tile
+    gsu_loop_end
+    
+GSU_plot12:
+    ibt R1, #$0 ; x
+    ibt R2, #$0 ; y
+    ibt R0, #$0
+    ibt R3, #$7
+    cmode
+    ibt R0, #$A6 ; plot
+    color
+    gsu_loop_begin
+    plot
+    with R1
+    add R3      ; next tile
+    gsu_loop_end 
+
+GSU_plot13:
+    ibt R1, #$0 ; x
+    ibt R2, #$0 ; y
+    ibt R0, #$0
+    cmode
+    ibt R0, #$00
+    color
+    gsu_loop_begin
+    plot
+    rpix
+    gsu_loop_end 
+    
+GSU_plot14:
+    ibt R1, #$0 ; x
+    ibt R2, #$0 ; y
+    ibt R0, #$0
+    cmode
+    ibt R0, #$A7
+    color
+    gsu_loop_begin
+    plot
+    rpix
+    gsu_loop_end 
+    
+GSU_plot15:
+    ibt R1, #$0 ; x
+    ibt R2, #$0 ; y
+    ibt R0, #$0
+    cmode
+    ibt R0, #$00
+    color
+    gsu_loop_begin
+    plot
+    plot
+    plot
+    plot
+    plot
+    plot
+    plot
+    plot
+    rpix
+    gsu_loop_end 
+
+GSU_plot16:
+    ibt R1, #$0 ; x
+    ibt R2, #$0 ; y
+    ibt R0, #$0
+    cmode
+    ibt R0, #$A8
+    color
+    gsu_loop_begin
+    plot
+    plot
+    plot
+    plot
+    plot
+    plot
+    plot
+    plot
+    rpix
+    gsu_loop_end 
+
+GSU_plot17:
+    ibt R1, #$0
+    ibt R2, #$0
+    ibt R0, #$0
+    cmode
+    ibt R0, #$A9
+    color
+    gsu_loop_begin
+    plot
+    ibt R3, #$4
+:   dec R3
+    bne :-
+    nop
+    gsu_loop_end
+    
+GSU_cache4:
+    cache
+    stop 
+    nop
+    
+GSU_ramb:
+    ibt R0, #$70
+    gsu_loop_begin
+    ramb
+    gsu_loop_end
+
+GSU_rol:
+    gsu_loop_begin
+    rol
+    gsu_loop_end
+    
+GSU_romb:
+    ibt R0, #00
+    gsu_loop_begin
+    romb
+    gsu_loop_end
+
+GSU_ror:
+    gsu_loop_begin
+    ror
+    gsu_loop_end
+
+GSU_rpix1:
+    ibt R1, #$0 ; x
+    ibt R2, #$0 ; y
+    gsu_loop_begin
+    rpix
+    gsu_loop_end
+    
+GSU_rpix2:
+    ibt R1, #$0 ; x
+    ibt R2, #$0 ; y
+    gsu_loop_begin
+    rpix
+    inc R1
+    gsu_loop_end
+    
+GSU_sbc:
+    gsu_loop_begin
+    sbc R3
+    gsu_loop_end
+    
+GSU_sbk:
+    ibt R0, #$70
+    ramb
+    iwt R0, #$0000
+    ldw (R0)
+    gsu_loop_begin
+    sbk (R0)
+    nop
+    gsu_loop_end
+    
+GSU_sex:
+    gsu_loop_begin
+    sex
+    gsu_loop_end
+
+GSU_sm:
+    ibt R0, #$70
+    ramb
+    gsu_loop_begin
+    sm ($0000), R0
+    gsu_loop_end
+    
+GSU_sms:
+    ibt R0, #$70
+    ramb
+    gsu_loop_begin
+    sms ($00), R0
+    gsu_loop_end
+    
+GSU_stb:
+    ibt R0, #$70
+    ramb
+    iwt R0, #$0000
+    gsu_loop_begin
+    stb (R0)
+    gsu_loop_end
+    
+GSU_stw:
+    ibt R0, #$70
+    ramb
+    iwt R0, #$0000
+    gsu_loop_begin
+    stw (R0)
+    gsu_loop_end
+    
+GSU_sub:
+    gsu_loop_begin
+    sub R3
+    gsu_loop_end
+    
+GSU_subi:
+    gsu_loop_begin
+    sub #$2
+    gsu_loop_end
+    
+GSU_swap:
+    gsu_loop_begin
+    swap
+    gsu_loop_end
+    
+GSU_to:
+    gsu_loop_begin
+    to R0
+    gsu_loop_end
+    
+GSU_umult:
+    ibt R0, #$33
+    ibt R3, #$88
+    gsu_loop_begin
+    umult R3
+	gsu_loop_end
+    
+GSU_umulti:
+    ibt R0, #$33
+    gsu_loop_begin
+    umult #$8
+	gsu_loop_end
+
+GSU_with:
+    gsu_loop_begin
+    with R0
+    gsu_loop_end
+    
+GSU_xor:
+    gsu_loop_begin
+    xor R1
+	gsu_loop_end
+    
+GSU_xori:
+    gsu_loop_begin
+    xor #$A
+	gsu_loop_end
+
+.res 16, $00 ; make sure above code is not still cached even after executing the cache opcode below
+
+GSU_cache:
+    gsu_loop_begin
+    cache
+    gsu_loop_end
+
+.res 16, $00
+
+GSU_ljmp:
+    ibt R10, #.bankbyte(GSU_ljmp)
+    iwt R0, #.loword(_ljmp)
+    gsu_loop_begin
+    ljmp R10 ; also should reset Cache
+_ljmp:
+    nop    
+    gsu_loop_end
+
+.res 16, $00
+
+GSU_cache_off:
+    cache
+    stop 
+    nop
